@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VNDER Studio</title>
+<meta name="description" content="VNDER: estudio de grabación, mezcla, mastering e instrumentales personalizadas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;800;900&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: el estudio como una cinta. Hero con forma de onda en vivo y piloto REC; servicios como tracklist; cierre con hoja de pedido. Single dark theme, a propósito. */
+:root{
+  --bg:#110f0e;
+  --panel:#1b1816;
+  --line:#2e2925;
+  --ink:#f1ebe4;
+  --mute:#9d938a;
+  --rec:#ff3d2e;
+  --display:"Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --body:"Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"DM Mono", ui-monospace, Menlo, monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--body);-webkit-font-smoothing:antialiased;padding-bottom:72px}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--rec);outline-offset:3px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.label{font:500 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+h1,h2,h3{font-family:var(--display);text-transform:uppercase;line-height:.9;text-wrap:balance;font-weight:900}
+h2{font-size:clamp(44px,7vw,84px);margin:10px 0 28px}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:16px 26px;border-radius:999px;font:600 16px/1 var(--body);text-decoration:none;border:1px solid transparent;cursor:pointer;transition:transform .15s, background .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn-rec{background:var(--rec);color:#160806}
+.btn-rec:hover{background:#ff5a4d}
+.btn-ghost{border-color:var(--line);color:var(--ink);background:transparent}
+.btn-ghost:hover{border-color:var(--mute)}
+section{padding:96px 0;border-top:1px solid var(--line)}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:20;background:rgba(17,15,14,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+.logo{font:900 28px/1 var(--display);letter-spacing:.06em;text-decoration:none}
+nav ul{display:flex;gap:26px;list-style:none}
+nav ul a{text-decoration:none;color:var(--mute);font-size:15px}
+nav ul a:hover{color:var(--ink)}
+nav .btn{padding:11px 18px;font-size:14px}
+@media (max-width:760px){nav ul{display:none}}
+
+/* HERO */
+.hero{padding:56px 0 40px;border-top:0}
+.rec{display:inline-flex;align-items:center;gap:10px}
+.rec i{width:10px;height:10px;border-radius:50%;background:var(--rec);box-shadow:0 0 12px var(--rec);animation:blink 1.6s steps(1) infinite}
+@keyframes blink{50%{opacity:.25}}
+.hero h1{font-size:clamp(64px,13vw,168px);margin:22px 0 0;letter-spacing:-.01em}
+.hero h1 span{color:var(--rec)}
+.hero-row{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:end;margin-top:26px}
+.hero p.lead{font-size:20px;max-width:34ch;color:#d6cdc4}
+.hero .ctas{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end}
+@media (max-width:760px){.hero-row{grid-template-columns:1fr}.hero .ctas{justify-content:flex-start}}
+#wave{display:block;width:100%;height:120px;margin-top:40px}
+.timecode{display:flex;justify-content:space-between;margin-top:10px}
+
+/* FACTS */
+.facts{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:36px}
+.facts div{padding:22px;border-right:1px solid var(--line)}
+.facts div:last-child{border-right:0}
+.facts b{display:block;font:800 34px/1 var(--display);margin-bottom:6px}
+.facts span{color:var(--mute);font-size:15px}
+@media (max-width:700px){.facts{grid-template-columns:1fr}.facts div{border-right:0;border-bottom:1px solid var(--line)}.facts div:last-child{border-bottom:0}}
+
+/* TRACKLIST */
+.tracks{list-style:none;border-top:1px solid var(--line)}
+.track{display:grid;grid-template-columns:64px 1fr auto;gap:20px;align-items:center;padding:26px 8px;border-bottom:1px solid var(--line);transition:background .15s}
+.track:hover{background:var(--panel)}
+.track .n{font:500 14px/1 var(--mono);color:var(--mute)}
+.track h3{font-size:clamp(28px,4vw,40px);font-weight:800}
+.track p{color:var(--mute);font-size:15px;margin-top:6px;max-width:58ch}
+.track .price{text-align:right;font:800 clamp(34px,5vw,52px)/1 var(--display);font-variant-numeric:tabular-nums}
+.track .price small{display:block;font:400 12px/1.4 var(--mono);color:var(--mute);letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
+.track .pick{font:500 13px/1 var(--body);color:var(--rec);text-decoration:none;border-bottom:1px solid currentColor;display:inline-block;margin-top:10px;cursor:pointer;background:none;border-top:0;border-left:0;border-right:0;padding:0 0 2px}
+.track.star{background:linear-gradient(90deg, rgba(255,61,46,.12), transparent 70%);border-left:3px solid var(--rec)}
+.badge{display:inline-block;font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;background:var(--rec);color:#160806;padding:6px 8px;border-radius:4px;margin-bottom:10px}
+@media (max-width:600px){.track{grid-template-columns:1fr auto}.track .n{display:none}}
+
+/* QUIZ */
+.quiz{display:grid;grid-template-columns:1fr 1.2fr;gap:40px;align-items:start}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;padding:18px 20px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:500 16px/1.4 var(--body);cursor:pointer;display:flex;justify-content:space-between;gap:12px;transition:border-color .15s}
+.opt:hover{border-color:var(--mute)}
+.opt[aria-pressed="true"]{border-color:var(--rec)}
+.opt .k{font:500 12px/1.4 var(--mono);color:var(--mute)}
+.result{border:1px solid var(--line);border-radius:16px;padding:28px;background:var(--panel);min-height:100%}
+.result h3{font-size:44px;margin:10px 0 8px}
+.result .rp{font:800 60px/1 var(--display);color:var(--rec);margin:14px 0}
+.result p{color:#d6cdc4}
+@media (max-width:760px){.quiz{grid-template-columns:1fr}}
+
+/* PROCESS */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;counter-reset:s}
+.step{border-top:2px solid var(--line);padding-top:18px}
+.step:first-child{border-top-color:var(--rec)}
+.step .label{display:block;margin-bottom:12px}
+.step h3{font-size:30px;margin-bottom:8px;font-weight:800}
+.step p{color:var(--mute);font-size:15px}
+@media (max-width:800px){.steps{grid-template-columns:1fr 1fr}}
+@media (max-width:460px){.steps{grid-template-columns:1fr}}
+
+/* TERMS + FAQ */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+@media (max-width:800px){.cols{grid-template-columns:1fr}}
+.terms{display:grid;gap:14px}
+.term{padding:22px;border:1px solid var(--line);border-radius:14px}
+.term b{display:block;font:800 26px/1 var(--display);text-transform:uppercase;margin-bottom:8px}
+.term p{color:var(--mute);font-size:15px}
+details{border-bottom:1px solid var(--line);padding:18px 0}
+summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:16px}
+summary::after{content:"+";font-family:var(--mono);color:var(--rec)}
+details[open] summary::after{content:"–"}
+details p{color:var(--mute);margin-top:10px;font-size:15px}
+
+/* CONTACT */
+.contact{display:grid;grid-template-columns:1fr 1.3fr;gap:48px}
+@media (max-width:860px){.contact{grid-template-columns:1fr}}
+form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+form .full{grid-column:1/-1}
+@media (max-width:520px){form{grid-template-columns:1fr}}
+label{display:block;font:500 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:8px}
+input,select,textarea{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font:400 16px/1.4 var(--body);padding:14px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--rec)}
+textarea{min-height:110px;resize:vertical}
+.out{grid-column:1/-1;display:none;border:1px solid var(--rec);border-radius:12px;padding:18px;background:rgba(255,61,46,.06)}
+.out.show{display:block}
+.out pre{white-space:pre-wrap;font:400 14px/1.5 var(--mono);color:#d6cdc4;margin:10px 0 14px}
+.out .row{display:flex;flex-wrap:wrap;gap:10px}
+.links{display:grid;gap:12px;margin-top:26px}
+.links a{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border:1px solid var(--line);border-radius:12px;text-decoration:none;transition:border-color .15s}
+.links a:hover{border-color:var(--rec)}
+.links small{font-family:var(--mono);color:var(--mute);font-size:13px}
+
+footer{border-top:1px solid var(--line);padding:30px 0;color:var(--mute);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+/* Sticky mobile CTA */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(17,15,14,.95);border-top:1px solid var(--line);padding:12px 20px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+.bar span{font-size:14px;color:var(--mute)}
+.bar span b{color:var(--ink)}
+.bar .btn{padding:12px 20px;font-size:15px}
+@media (min-width:761px){.bar{display:none}body{padding-bottom:0}}
+</style>
+</head>
+<body>
+
+<nav aria-label="Principal">
+  <div class="wrap">
+    <a href="#top" class="logo">VNDER</a>
+    <ul>
+      <li><a href="#servicios">Servicios</a></li>
+      <li><a href="#elige">¿Qué necesito?</a></li>
+      <li><a href="#proceso">Proceso</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <a href="#contacto" class="btn btn-rec">Reservar</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <span class="label rec"><i aria-hidden="true"></i>REC · Estudio VNDER</span>
+    <h1>Tu tema,<br>sonando <span>de verdad.</span></h1>
+    <div class="hero-row">
+      <p class="lead">Grabación, instrumentales a medida, mezcla y mastering. Llegas con una idea y te vas con un tema listo para subir a plataformas.</p>
+      <div class="ctas">
+        <a href="#contacto" class="btn btn-rec">Pedir presupuesto</a>
+        <a href="https://open.spotify.com/intl-es/artist/0PRBVwG0LpcKJzvrP5oNRb" class="btn btn-ghost" target="_blank" rel="noopener">Escuchar en Spotify ↗</a>
+      </div>
+    </div>
+    <canvas id="wave" aria-hidden="true"></canvas>
+    <div class="timecode label"><span id="tc">00:00:00</span><span>48 kHz · 24 bit</span></div>
+    <div class="facts">
+      <div><b>20 € / h</b><span>Grabación en estudio</span></div>
+      <div><b>2 arreglos</b><span>Incluidos tras la entrega</span></div>
+      <div><b>350 €</b><span>Producción completa, de cero a master</span></div>
+    </div>
+  </div>
+</header>
+
+<section id="servicios">
+  <div class="wrap">
+    <span class="label">Cara A · Servicios y precios</span>
+    <h2>Tracklist</h2>
+    <ol class="tracks">
+      <li class="track star">
+        <span class="n">01</span>
+        <div>
+          <span class="badge">Lo más pedido</span>
+          <h3>Producción completa</h3>
+          <p>Todo en uno: producción de la instrumental, grabación, edición y producción vocal, mezcla y mastering.</p>
+          <button class="pick" data-svc="Producción completa (350 €)">Quiero este →</button>
+        </div>
+        <div class="price">350 €<small>Todo incluido</small></div>
+      </li>
+      <li class="track">
+        <span class="n">02</span>
+        <div>
+          <h3>Instrumental + exclusiva</h3>
+          <p>Instrumental personalizada para ti, con leasing exclusivo.</p>
+          <button class="pick" data-svc="Instrumental personalizada con leasing exclusivo (150 €)">Quiero este →</button>
+        </div>
+        <div class="price">150 €<small>Leasing exclusivo</small></div>
+      </li>
+      <li class="track">
+        <span class="n">03</span>
+        <div>
+          <h3>Instrumental sin leasing</h3>
+          <p>Instrumental personalizada, sin leasing.</p>
+          <button class="pick" data-svc="Instrumental sin leasing (80 €)">Quiero este →</button>
+        </div>
+        <div class="price">80 €<small>Sin leasing</small></div>
+      </li>
+      <li class="track">
+        <span class="n">04</span>
+        <div>
+          <h3>Voces, mezcla y master</h3>
+          <p>Edición de voces, mezcla y mastering sobre type beat de YouTube o BeatStars. No incluye la grabación.</p>
+          <button class="pick" data-svc="Edición de voces, mezcla y mastering (75 €)">Quiero este →</button>
+        </div>
+        <div class="price">75 €<small>Por tema</small></div>
+      </li>
+      <li class="track">
+        <span class="n">05</span>
+        <div>
+          <h3>Grabación</h3>
+          <p>Sesión de grabación en el estudio. Pagas solo las horas que grabas.</p>
+          <button class="pick" data-svc="Grabación (20 €/hora)">Quiero este →</button>
+        </div>
+        <div class="price">20 €<small>Por hora</small></div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section id="elige">
+  <div class="wrap quiz">
+    <div>
+      <span class="label">Cara B · 10 segundos</span>
+      <h2>¿Qué necesito?</h2>
+      <p style="color:var(--mute);margin-bottom:22px">Dime qué tienes ya y te digo qué servicio encaja.</p>
+      <div class="opts" role="group" aria-label="Qué tienes ya">
+        <button class="opt" data-r="0" aria-pressed="true">Solo una idea o una letra <span class="k">A</span></button>
+        <button class="opt" data-r="1" aria-pressed="false">Letra, pero necesito el beat <span class="k">B</span></button>
+        <button class="opt" data-r="2" aria-pressed="false">Ya grabé sobre un type beat <span class="k">C</span></button>
+        <button class="opt" data-r="3" aria-pressed="false">Tengo el beat y quiero grabar <span class="k">D</span></button>
+      </div>
+    </div>
+    <div class="result" aria-live="polite">
+      <span class="label">Te recomiendo</span>
+      <h3 id="rName">Producción completa</h3>
+      <div class="rp" id="rPrice">350 €</div>
+      <p id="rWhy">Te lo hago todo: beat, grabación, voces, mezcla y master. Tú solo traes la idea.</p>
+      <p style="margin-top:22px"><a href="#contacto" class="btn btn-rec" id="rCta">Reservar este servicio</a></p>
+    </div>
+  </div>
+</section>
+
+<section id="proceso">
+  <div class="wrap">
+    <span class="label">Cómo trabajamos</span>
+    <h2>De la idea al master</h2>
+    <div class="steps">
+      <div class="step"><span class="label">Paso 1</span><h3>Me escribes</h3><p>Cuéntame el tema, referencias y qué necesitas. Te respondo con el plan.</p></div>
+      <div class="step"><span class="label">Paso 2</span><h3>Sesión</h3><p>Grabamos y/o produzco tu instrumental a medida.</p></div>
+      <div class="step"><span class="label">Paso 3</span><h3>Mezcla y master</h3><p>Edición vocal, mezcla y mastering hasta que suene como buscas.</p></div>
+      <div class="step"><span class="label">Paso 4</span><h3>Entrega</h3><p>Tema listo para plataformas, con 2 arreglos incluidos tras la entrega.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap cols">
+    <div>
+      <span class="label">Sin letra pequeña</span>
+      <h2>Condiciones</h2>
+      <div class="terms">
+        <div class="term"><b>Pago</b><p>La mitad de cada importe se abona antes de la entrega final del producto. No aplica a la grabación.</p></div>
+        <div class="term"><b>Arreglos</b><p>Una vez entregado el tema y quedando conforme, los dos primeros arreglos van incluidos. A partir del tercero: 15 € por arreglo.</p></div>
+      </div>
+    </div>
+    <div>
+      <span class="label">FAQ</span>
+      <h2>Dudas</h2>
+      <details open><summary>¿Qué diferencia hay entre leasing exclusivo y sin leasing?</summary><p>Con leasing exclusivo (150 €) la instrumental personalizada es exclusiva para ti. La opción sin leasing (80 €) es la instrumental personalizada sin esa exclusividad.</p></details>
+      <details><summary>Ya tengo un type beat de YouTube. ¿Me sirve?</summary><p>Sí. El servicio de edición de voces, mezcla y mastering (75 €) está pensado para eso. La grabación se paga aparte a 20 €/hora.</p></details>
+      <details><summary>¿La producción completa incluye la grabación?</summary><p>Sí. Los 350 € incluyen instrumental, grabación, edición y producción vocal, mezcla y mastering.</p></details>
+      <details><summary>¿Qué pasa si quiero cambios?</summary><p>Tras la entrega tienes dos arreglos incluidos. Desde el tercero, 15 € cada uno.</p></details>
+      <details><summary>¿Puedo escuchar trabajos anteriores?</summary><p>Sí, en Spotify y en Instagram (@prodbyvnder). Los enlaces están abajo.</p></details>
+    </div>
+  </div>
+</section>
+
+<section id="contacto">
+  <div class="wrap contact">
+    <div>
+      <span class="label rec"><i aria-hidden="true"></i>Agenda abierta</span>
+      <h2>Reserva tu sesión</h2>
+      <p style="color:#d6cdc4;max-width:40ch">Rellena esto y te preparo el mensaje para mandarlo por email o Instagram. Te contesto con disponibilidad y presupuesto cerrado.</p>
+      <div class="links">
+        <a href="mailto:vnderprods@gmail.com"><span>Email</span><small>vnderprods@gmail.com</small></a>
+        <a href="https://instagram.com/prodbyvnder" target="_blank" rel="noopener"><span>Instagram</span><small>@prodbyvnder ↗</small></a>
+        <a href="https://open.spotify.com/intl-es/artist/0PRBVwG0LpcKJzvrP5oNRb" target="_blank" rel="noopener"><span>Spotify</span><small>VNDER ↗</small></a>
+      </div>
+    </div>
+    <form id="f" novalidate>
+      <div><label for="name">Tu nombre</label><input id="name" required autocomplete="name"></div>
+      <div><label for="artist">Nombre artístico</label><input id="artist"></div>
+      <div class="full"><label for="svc">Servicio</label>
+        <select id="svc">
+          <option>Producción completa (350 €)</option>
+          <option>Instrumental personalizada con leasing exclusivo (150 €)</option>
+          <option>Instrumental sin leasing (80 €)</option>
+          <option>Edición de voces, mezcla y mastering (75 €)</option>
+          <option>Grabación (20 €/hora)</option>
+          <option>No lo tengo claro</option>
+        </select>
+      </div>
+      <div><label for="when">¿Para cuándo?</label><input id="when" placeholder="Ej. antes de fin de mes"></div>
+      <div><label for="ref">Referencia o demo (link)</label><input id="ref" placeholder="Spotify, YouTube, Drive…"></div>
+      <div class="full"><label for="msg">Cuéntame el tema</label><textarea id="msg" placeholder="Estilo, vibe, artistas de referencia…"></textarea></div>
+      <div class="full"><button class="btn btn-rec" type="submit">Preparar mi solicitud</button></div>
+      <div class="out" id="out" role="status">
+        <span class="label">Tu mensaje, listo para enviar</span>
+        <pre id="txt"></pre>
+        <div class="row">
+          <a class="btn btn-rec" id="mail" href="#">Abrir en mi email</a>
+          <button class="btn btn-ghost" type="button" id="copy">Copiar texto</button>
+          <a class="btn btn-ghost" href="https://instagram.com/prodbyvnder" target="_blank" rel="noopener">Pegar en Instagram ↗</a>
+        </div>
+        <p class="label" style="margin-top:14px;text-transform:none;letter-spacing:0">Envíalo a vnderprods@gmail.com o por DM a @prodbyvnder.</p>
+      </div>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap"><span>© VNDER Studio</span><span>vnderprods@gmail.com · @prodbyvnder</span></div>
+</footer>
+
+<div class="bar"><span>Producción completa <b>350 €</b></span><a href="#contacto" class="btn btn-rec">Reservar</a></div>
+
+<script>
+// Waveform
+(function(){
+  const c=document.getElementById('wave'),x=c.getContext('2d'),tc=document.getElementById('tc');
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let w,h,t=0,start=performance.now();
+  function size(){const d=devicePixelRatio||1;w=c.clientWidth;h=c.clientHeight;c.width=w*d;c.height=h*d;x.setTransform(d,0,0,d,0,0)}
+  size();addEventListener('resize',size);
+  function draw(){
+    x.clearRect(0,0,w,h);
+    const bars=Math.floor(w/6),head=(t*0.18)%bars;
+    for(let i=0;i<bars;i++){
+      const n=Math.abs(Math.sin(i*0.21+t*0.02)*Math.cos(i*0.047)+Math.sin(i*0.73)*0.35);
+      const env=0.25+0.75*Math.abs(Math.sin(i/bars*Math.PI*3));
+      const bh=Math.max(2,n*env*h*0.9);
+      x.fillStyle=i<head?'#ff3d2e':'#3a332e';
+      x.fillRect(i*6,(h-bh)/2,3,bh);
+    }
+    x.fillStyle='#f1ebe4';x.fillRect(Math.floor(head)*6-1,0,1,h);
+    const s=Math.floor((performance.now()-start)/1000);
+    tc.textContent=[0,Math.floor(s/60)%60,s%60].map(v=>String(v).padStart(2,'0')).join(':');
+    t++; if(!reduce) requestAnimationFrame(draw);
+  }
+  t=reduce?400:0; draw();
+})();
+
+// Quiz
+const R=[
+  {n:'Producción completa',p:'350 €',w:'Te lo hago todo: beat, grabación, voces, mezcla y master. Tú solo traes la idea.',s:'Producción completa (350 €)'},
+  {n:'Instrumental + exclusiva',p:'150 €',w:'Una instrumental hecha para tu letra y solo para ti. Si buscas ahorrar, también está sin leasing por 80 €.',s:'Instrumental personalizada con leasing exclusivo (150 €)'},
+  {n:'Voces, mezcla y master',p:'75 €',w:'Edito tus voces, mezclo y masterizo sobre tu type beat para que suene profesional.',s:'Edición de voces, mezcla y mastering (75 €)'},
+  {n:'Grabación',p:'20 € / h',w:'Vienes al estudio y grabamos. Añade la mezcla y master por 75 € para dejarlo listo.',s:'Grabación (20 €/hora)'}
+];
+const svc=document.getElementById('svc');
+let chosen=R[0].s;
+document.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed','false'));
+  b.setAttribute('aria-pressed','true');
+  const r=R[+b.dataset.r];
+  rName.textContent=r.n;rPrice.textContent=r.p;rWhy.textContent=r.w;chosen=r.s;
+}));
+rCta.addEventListener('click',()=>{svc.value=chosen});
+document.querySelectorAll('.pick').forEach(b=>b.addEventListener('click',()=>{
+  svc.value=b.dataset.svc;document.getElementById('contacto').scrollIntoView({behavior:'smooth'});
+  setTimeout(()=>document.getElementById('name').focus({preventScroll:true}),500);
+}));
+
+// Form
+document.getElementById('f').addEventListener('submit',e=>{
+  e.preventDefault();
+  const v=id=>document.getElementById(id).value.trim();
+  if(!v('name')){document.getElementById('name').focus();document.getElementById('name').style.borderColor='var(--rec)';return}
+  const body='Hola VNDER,\n\nSoy '+v('name')+(v('artist')?' ('+v('artist')+')':'')+'.\nMe interesa: '+v('svc')+'\n'+(v('when')?'Para: '+v('when')+'\n':'')+(v('ref')?'Referencia: '+v('ref')+'\n':'')+(v('msg')?'\n'+v('msg')+'\n':'')+'\n¿Qué disponibilidad tienes?';
+  txt.textContent=body;
+  mail.href='mailto:vnderprods@gmail.com?subject='+encodeURIComponent('Reserva: '+v('svc'))+'&body='+encodeURIComponent(body);
+  out.classList.add('show');out.scrollIntoView({behavior:'smooth',block:'nearest'});
+});
+copy.addEventListener('click',async()=>{
+  try{await navigator.clipboard.writeText(txt.textContent);copy.textContent='Copiado ✓'}
+  catch(_){copy.textContent='Selecciona y copia el texto'}
+});
+</script>
+</body>
+</html>
